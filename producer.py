@@ -1,6 +1,8 @@
 import pika
 import json
 import datetime
+import threading
+import time
 
 
 class Producer():
@@ -29,7 +31,6 @@ class Producer():
             routing_key='bolid_state.report',
             body = json.dumps(self.bolid_state)
         )
-        print(f'{self.bolid_state["date"]}: Message: Bolid state sent')
 
     def connection_close(self):
         self.connection.close()
@@ -38,9 +39,32 @@ class Producer():
         self.date = Producer.current_time()
         self.bolid_state['date'] = Producer.current_time()
 
+    def actualize_bolid_state(self, bolid):
+        self.bolid = bolid
+        self.bolid_state['engine_temperature'] = bolid.engine_temperature
+        self.bolid_state['tire_pressure'] = bolid.tire_pressure
+        self.bolid_state['oil_pressure'] = bolid.oil_pressure
+        self.bolid_state['fuel_level'] = bolid.fuel_level
+        self.bolid_state['check_engine'] = bolid.check_engine
+
     
     @staticmethod
     def current_time():
         dt = datetime.datetime.now()
         dt_without_ms = dt.strftime('%Y-%m-%d %H:%M:%S')  
         return dt_without_ms
+
+
+class ProducerThread(threading.Thread):
+
+    def __init__(self, producer):
+        super().__init__()
+        self.daemon = True
+        self.producer = producer
+    
+    def run(self):
+        while True:
+            # Repeat code in 15s loop - sent notification every 15s
+            self.producer.actualize_date()
+            self.producer.publish_state()
+            time.sleep(15)    
