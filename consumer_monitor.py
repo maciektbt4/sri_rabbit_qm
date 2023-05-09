@@ -5,6 +5,8 @@ from classes.bolid import Bolid
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
+channel.exchange_declare(exchange='bolid_alarm', exchange_type='direct')
+
 queue = channel.queue_declare('consumer_monitor', exclusive=True)
 queue_name = queue.method.queue
 
@@ -13,6 +15,10 @@ channel.queue_bind(
     queue = queue_name,
     routing_key ='bolid_state.report'
 )
+
+def send_alert(channel, key, message):
+    channel.basic_publish(exchange='bolid_alarm', routing_key=key, body=message)
+
 
 def callback(ch, method, properties, body):
     payload = json.loads(body) 
@@ -34,10 +40,18 @@ def callback(ch, method, properties, body):
         print ("Everything's ok, keep going!")
 
     if bolid_warning:
-        print ("Warning, one of parameter is outside range, inform mechanics!") 
+        body_warning = payload
+        warning_message = 'Warning, one of parameter is outside range! Repair is needed.'
+        body_warning['warning_message'] = warning_message
+        print (f"{warning_message} Inform mechanics!") 
+        send_alert(channel, 'mechanics', json.dumps(body_warning))
 
     if bolid_alarm:
-        print ("Alarm, serious demage, inform driver!") 
+        body_alarm = payload
+        alarm_message = 'Alarm, serious demage! Prepare to stop on racetrack or return to pitstop !'
+        body_alarm['alarm_message'] = alarm_message
+        print (f"{alarm_message}, inform driver!") 
+        send_alert(channel, 'driver', json.dumps(body_alarm))
         
     print ('-----------------\n')
     ch.basic_ack(delivery_tag = method.delivery_tag)
