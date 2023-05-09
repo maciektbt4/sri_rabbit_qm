@@ -1,5 +1,6 @@
 import pika
 import json
+import datetime
 
 
 class Producer():
@@ -9,11 +10,10 @@ class Producer():
         self.channel = self.connection.channel()
         self.channel.exchange_declare(
             exchange='bolid_state',
-            exchange_type='direct'
+            exchange_type='fanout'
         )
         self.bolid = bolid
         self.date = date
-
         self.bolid_state = {
             'date': str(self.date),
             'engine_temperature': bolid.engine_temperature,   
@@ -30,4 +30,17 @@ class Producer():
             body = json.dumps(self.bolid_state)
         )
         print(f'{self.bolid_state["date"]}: Message: Bolid state sent')
+
+    def connection_close(self):
         self.connection.close()
+
+    def actualize_date(self):
+        self.date = Producer.current_time()
+        self.bolid_state['date'] = Producer.current_time()
+
+    
+    @staticmethod
+    def current_time():
+        dt = datetime.datetime.now()
+        dt_without_ms = dt.strftime('%Y-%m-%d %H:%M:%S')  
+        return dt_without_ms
