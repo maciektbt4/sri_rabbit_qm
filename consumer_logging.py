@@ -2,7 +2,7 @@ import pika
 import json
 
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq', connection_attempts=10))
 channel = connection.channel()
 
 queue = channel.queue_declare('bolid_state_report', exclusive=True)
@@ -20,7 +20,7 @@ def callback(ch, method, properties, body):
     print ('Consumer 1: logging')
     print ('Current bolid state:') 
     print (f'Date: {payload["date"]}')
-    print (f'Engine temperature: {payload["engine_temperature"]}°')
+    print (f'Engine temperature: {payload["engine_temperature"]}°C')
     print (f'Tire pressure: {payload["tire_pressure"]} bar')
     print (f'Oil pressure: {payload["oil_pressure"]} PSI')
     print (f'Fuel level: {payload["fuel_level"]}%')
@@ -29,5 +29,5 @@ def callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag = method.delivery_tag)
 
 channel.basic_consume(on_message_callback= callback, queue= queue_name)
-print("Waiting for massges...")
+print("Waiting for massages...")
 channel.start_consuming()

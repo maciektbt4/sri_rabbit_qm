@@ -1,4 +1,5 @@
 import pika
+from pika.exceptions import AMQPConnectionError
 import json
 import datetime
 import threading
@@ -8,7 +9,15 @@ import time
 class Producer():
     
     def __init__(self, bolid, date):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+        
+        # Try to connect with rabbitmq server
+        try:
+            # self.connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq', connection_attempts=10))
+        # When cannot connect rise exception
+        except AMQPConnectionError as e:
+            print("Błąd połączenia z RabbitMQ:", str(e))
+        
         self.channel = self.connection.channel()
         self.channel.exchange_declare(
             exchange='bolid_state',

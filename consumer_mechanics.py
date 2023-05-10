@@ -2,7 +2,7 @@ import pika
 import json
 
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq', connection_attempts=10))
 channel = connection.channel()
 
 queue = channel.queue_declare('consumer_mechanics', exclusive=True)
@@ -30,5 +30,5 @@ def callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag = method.delivery_tag)
 
 channel.basic_consume(on_message_callback= callback, queue= queue_name)
-print("Waiting for massges...")
+print("Waiting for massages...")
 channel.start_consuming()
