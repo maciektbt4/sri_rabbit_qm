@@ -1,10 +1,12 @@
-from producer import Producer, ProducerThread
+from classes.producer import Producer, ProducerThread
 from classes.bolid import Bolid
 
 # Create instances: bolid, producer and producer thread
 bolid  = Bolid(60.0, 1.1, 30.0, 100.0, False)
+
 # Create producer
-producer = Producer(bolid, Producer.current_time())
+# producer = Producer(bolid, Producer.current_time()) # standard configuration when running with docker
+producer = Producer(bolid, Producer.current_time(),host_name='localhost') # 'localhost' need to be used when running without docker 
 producer_thread = ProducerThread(producer)
 producer_thread.start()
 
@@ -12,7 +14,7 @@ producer_thread.start()
 # Ease interface to change bolid data
 while(True):
     user_input = input("Do you want to change bolid parameters? (Y/N): ").capitalize()    
-    if user_input == "Y":
+    if user_input == "Y" or "YES":
         # Take new bolid parameters from user
         new_engine_temperature = float(input("Actualize engine temperature (warning > 230°C; alarm > 276°C): "))
         new_tire_pressure = float(input("Actualize tire pressure (warning < 1.1 bar; alarm < 0.88 bar): "))
