@@ -8,8 +8,8 @@ initialize_queue()
 bolid  = Bolid(60.0, 1.1, 30.0, 100.0, False)
 
 # Create producer
-producer = Producer(bolid, Producer.current_time()) # standard configuration when running with docker
-# producer = Producer(bolid, Producer.current_time(),host_name='localhost') # 'localhost' need to be used when running without docker 
+# producer = Producer(bolid, Producer.current_time()) # standard configuration when running with docker
+producer = Producer(bolid, Producer.current_time(),host_name='localhost') # 'localhost' need to be used when running without docker 
 producer_thread = ProducerThread(producer)
 producer_thread.start()
 

@@ -9,7 +9,7 @@ from classes.consumers.supervisor import Supervisor
 
 def initialize_queue():
 
-    is_hostname_localhost = False
+    is_hostname_localhost = True
 
     if is_hostname_localhost:
         # Create instances: bolid, producer and producer thread
