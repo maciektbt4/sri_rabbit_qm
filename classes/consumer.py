@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import pika
+import datetime
 
 class Consumer(ABC):
 
@@ -27,5 +28,11 @@ class Consumer(ABC):
         print("Waiting for massages...")
         self.channel.start_consuming()
 
-    def close_connection(self):
+    def connection_close(self):
         self.connection.close()
+
+    @staticmethod
+    def current_time():
+        dt = datetime.datetime.now()
+        dt_without_ms = dt.strftime('%Y-%m-%d %H:%M:%S')  
+        return dt_without_ms
