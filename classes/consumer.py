@@ -17,6 +17,7 @@ class Consumer(ABC):
             routing_key =routing_key
         )
 
+
     @abstractmethod
     def callback(self):
         pass  
